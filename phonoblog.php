@@ -1,77 +1,39 @@
 <?php
 
-require 'twilio.php';
+/*
+Plugin Name: PhonoBlog
+Plugin URI: http://phonoblog.com
+Description: Voice to blog posts.
+Version: 0.5
+Author: ninnypants
+Author URI: http://ninnypants.com
+License: GPL2
 
-/* Define Menu */
-$menu = array();
-$menu['default'] = array('record-title', 'record-post', 'choose-status');
 
-/* Get the menu node, index, and url */
-$node = $_REQUEST['node'];
-$index = (int) $_REQUEST['Digits'];
-$url = 'http://'.dirname($_SERVER["SERVER_NAME"].$_SERVER['PHP_SELF']).'/phonemenu.php';
+Copyright 2010  Tyrel "ninnypants" Kelsey  (email : tyrel@ninnypants.com)
 
-/* Check to make sure index is valid */
-if(isset($web[$node]) || count($web[$node]) >= $index && !is_null($_REQUEST['Digits'])){
-	$destination = $web[$node][$index];
-}else{
-	$destination = NULL;
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as 
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+// settings page
+add_submenu_page('options-general.php', 'PhonoBlog Settings', 'publish_posts', 'phonoblog', 'phonoblog_settings');
+
+function phonoblog_settings(){
+	
+	// save settings
+	if($_POST['save'] && wp_verify_nonce($_POST['_wpnonce'], 'phonoblogsavesettings')){
+		
+	}
+
 }
-
-/* Render TwiML */
-header("content-type: text/xml");
-echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\n";
-switch($destination) {
-	case 'hours': ?>
-		<Say>Initech is open Monday through Friday, 9am to 5pm</Say>
-		<Say>Saturday, 10am to 3pm and closed on Sundays</Say>
-	<?php
-	break;
-	
-	case 'location': ?>
-		<Say>Initech is located at 101 4th St in San Francisco California</Say>
-		<Gather action="<?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php?node=location'; ?>" numDigits="1">
-			<Say>For directions from the East Bay, press 1</Say>
-			<Say>For directions from San Jose, press 2</Say>
-		</Gather>
-	<?php
-	break;
-	
-	case 'east-bay': ?>
-		<Say>Take BART towards San Francisco / Milbrae. Get off on Powell Street. Walk a block down 4th street</Say>
-	<?php
-	break;
-	
-	case 'san-jose': ?>
-		<Say>Take Cal Train to the Milbrae BART station. Take any Bart train to Powell Street</Say>
-	<?php
-	break;
-	
-	case 'duck'; ?>
-		<Play>duck.mp3</Play>
-	<?php
-	break;
-	
-	case 'receptionist'; ?>
-		<Say>Please wait while we connect you</Say>
-		<Dial>NNNNNNNNNN</Dial>
-	<?php
-	break;
-	
-	default: ?>
-		<Gather action="<?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php?node=default'; ?>" numDigits="1">
-		<Say>Hello and welcome to the Initech Phone Menu</Say>
-		<Say>For business hours, press 1</Say>
-		<Say>For directions, press 2</Say>
-		<Say>To hear a duck quack, press 3</Say>
-		<Say>To speak to a receptionist, press 0</Say>
-		</Gather>
-	<?php
-	break;
-}
-
-if($destination && $destination != 'receptionist') { ?>
-	<Pause/>
-	<Say>Main Menu</Say>
-	<Redirect><?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php' ?></Redirect>
-<?php }
