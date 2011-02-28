@@ -27,13 +27,51 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // settings page
-add_submenu_page('options-general.php', 'PhonoBlog Settings', 'publish_posts', 'phonoblog', 'phonoblog_settings');
+add_action('admin_menu', 'pb_add_menus');
+function pb_add_menus(){
+add_submenu_page('options-general.php', 'PhonoBlog Settings', 'PhonoBlog Settings', 'publish_posts', 'phonoblog', 'phonoblog_settings');
+}
 
 function phonoblog_settings(){
 	
 	// save settings
 	if($_POST['save'] && wp_verify_nonce($_POST['_wpnonce'], 'phonoblogsavesettings')){
-		
+		$settings = array();
+
+		$settings['sid'] = $_POST['sid'];
+		$settings['token'] = $_POST['token'];
+		$settings['number'] = $_POST['number'];
+		$settings['user'] = $_POST['user'];
+		if(get_option('phonoblogsettings')){
+			update_option('phonoblogsettings', $settings, '', 'no');
+		}else{
+			add_option('phonoblogsettings', $settings, '', 'no');
+		}
 	}
+	$settings = get_option('phonoblogsettings');
+	?>
+	<div class="wrap">
+	<form method="post" action="">
+		<p>Account SID: <input type="text" name="sid" id="sid" value="<?php if($settings){ echo $settings['sid']; } ?>" /></p>
+		<p>Auth Token: <input type="text" name="token" id="token" value="<?php if($settings){ echo $settings['token']; } ?>" />
+		<p>Associate a user with their phone number.<br />
+			<select name="user">
+				<option value="">Select User</option>
+				<?php
+				$users = get_users(array('meta_key' => 'wp_user_level', 'meta_value' => 1, 'meta_compare' => '>'));
+				
+				foreach($users as $user){
+					echo '<option value="'.$user->ID.'" '.($settings ? selected($settings['user'], $user->ID) : '').'>'.$user->user_login.'</option>';
+				}
+				?>
+			</select>
+			<input type="text" name="number" id="number" value="<?php if($settings){ echo $settings['number']; } ?>" /> 
+		</p>
+		<input type="submit" value="Save" id="save" name="save" class="button-primary" />
+		<?php wp_nonce_field('phonoblogsavesettings'); ?>
+	</form>
+	</div>
+	<?php
 
 }
+?>
