@@ -4,76 +4,59 @@ require_once '../../../wp-config.php';
 require_once ABSPASH.WPINC.'/post.php';
 require './twilio.php';
 
-/* Define Menu */
-$menu = array();
-$menu['default'] = array('record-title', 'record-post', 'choose-status');
+// get settings
+$settings = get_option('phonoblogsettings');
+$name = get_bloginfo('name');
+$url = get_bloginfo('url');
+$gather_url = $url.str_replace(ABSPATH, '', __FILE__);
+$transcribe_url = $url.dirname($filepath).'/transcribe.php';
 
-/* Get the menu node, index, and url */
-$node = $_REQUEST['node'];
-$index = (int) $_REQUEST['Digits'];
-$url = 'http://'.dirname($_SERVER["SERVER_NAME"].$_SERVER['PHP_SELF']).'/phonemenu.php';
-
-/* Check to make sure index is valid */
-if(isset($web[$node]) || count($web[$node]) >= $index && !is_null($_REQUEST['Digits'])){
-	$destination = $web[$node][$index];
-}else{
-	$destination = NULL;
+// check to make sure the number is allowed
+if($settings['phone'] != $_REQUEST['From']){
+	header("Content-type: text/xml");
+	
+	echo '<?xml version="1.0" encoding="UTF-8"?>';
+	?>
+	<Response>
+		<Reject />
+	</Response>
+	<?php
+	exit;
 }
+
 
 /* Render TwiML */
 header("content-type: text/xml");
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\n";
-switch($destination) {
-	case 'hours': ?>
-		<Say>Initech is open Monday through Friday, 9am to 5pm</Say>
-		<Say>Saturday, 10am to 3pm and closed on Sundays</Say>
-	<?php
-	break;
-	
-	case 'location': ?>
-		<Say>Initech is located at 101 4th St in San Francisco California</Say>
-		<Gather action="<?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php?node=location'; ?>" numDigits="1">
-			<Say>For directions from the East Bay, press 1</Say>
-			<Say>For directions from San Jose, press 2</Say>
+switch($_REQUEST['step']) {
+	case 2: ?>
+		<Say>Dicktate your post then press any key to continue. We're listening.</Say>
+		<Gather action="<?php  echo $url.'?step=3'; ?>" numDigits="1">
+			<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=content'; ?>" maxLength="600" />
 		</Gather>
 	<?php
 	break;
 	
-	case 'east-bay': ?>
-		<Say>Take BART towards San Francisco / Milbrae. Get off on Powell Street. Walk a block down 4th street</Say>
+	case 3: ?>
+		<Gather action="<?php  echo $url.'?step=4'; ?>" numDigits="1">
+			<Say>Press 1, to publish your post.</Say>
+			<Say>Press 2, to save your post as a draft</Say>
+		</Gather>
 	<?php
 	break;
-	
-	case 'san-jose': ?>
-		<Say>Take Cal Train to the Milbrae BART station. Take any Bart train to Powell Street</Say>
-	<?php
-	break;
-	
-	case 'duck'; ?>
-		<Play>duck.mp3</Play>
-	<?php
-	break;
-	
-	case 'receptionist'; ?>
-		<Say>Please wait while we connect you</Say>
-		<Dial>NNNNNNNNNN</Dial>
-	<?php
+
+	case 4:
+		
 	break;
 	
 	default: ?>
-		<Gather action="<?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php?node=default'; ?>" numDigits="1">
-		<Say>Hello and welcome to the Initech Phone Menu</Say>
-		<Say>For business hours, press 1</Say>
-		<Say>For directions, press 2</Say>
-		<Say>To hear a duck quack, press 3</Say>
-		<Say>To speak to a receptionist, press 0</Say>
+		<Say>Hello and welcome to <?php echo $name; ?> please tell us the title of your post then press any key to continue.</Say>
+		<Gather action="<?php echo $url.'?step=2'; ?>" numDigits="1">
+			<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=title'; ?>" maxLength="30" />
 		</Gather>
 	<?php
 	break;
 }
 
-if($destination && $destination != 'receptionist') { ?>
-	<Pause/>
-	<Say>Main Menu</Say>
-	<Redirect><?php echo 'http://' . dirname($_SERVER["SERVER_NAME"] .  $_SERVER['PHP_SELF']) . '/phonemenu.php' ?></Redirect>
-<?php }
+?>
+</Response>
