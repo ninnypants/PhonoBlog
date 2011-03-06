@@ -2,6 +2,7 @@
 
 require_once '../../../wp-config.php';
 require_once ABSPASH.WPINC.'/post.php';
+require_once ABSPASH.WPINC.'/query.php';
 require './twilio.php';
 
 // get settings
@@ -46,7 +47,84 @@ switch($_REQUEST['step']) {
 	break;
 
 	case 4:
-		
+		if($_REQUEST['Digits'] == 1){
+			// find post by sid
+			$sid = $_REQUEST['Sid'];
+			$posts = get_posts(array(
+				'meta_query' => array(
+					'key' => 'phonoblog_sid',
+					'value' => $sid
+				)
+			));
+			// if the post doesn't exist create one
+			// and add the post_status meta but leave
+			// it as a draft since none of the other
+			// content is in place
+			if(count($posts) == 0){
+
+				$post = wp_insert_post(array(
+					'post_title' => 'Pending',
+					'post_content' => 'Pending',
+					'post_author' => $settings['user']
+				));
+
+				add_post_meta($post, 'phonoblog_post_status', 'publish');
+
+			}else{
+				// if the post exists then get the status
+				// of the title and content transcriptions
+				$post = get_object_vars($posts[0]);
+				$title_status = get_post_meta($post['ID'], 'phonoblog_title_status', true);
+				$content_status = get_post_meta($post['ID'], 'phonoblog_content_status', true);
+
+				// if everything is ready publish the post
+				if(($title_status && $content_status) && $title_status == 'completed' && $content_status == 'completed'){
+					$post['post_status'] ='publish';
+					wp_insert_post($post);
+				}else{
+					// if not add the post status meta so that it can be
+					// published when everything is ready
+					add_post_meta($post['ID'], 'phonoblog_post_status', 'publish');
+				}
+			}
+
+		}elseif($_REQUEST['Digits'] == 2){
+			// get post by sid
+			$sid = $_REQUEST['Sid'];
+			$posts = get_posts(array(
+				'meta_query' => array(
+					'key' => 'phonoblog_sid',
+					'value' => $sid
+				)
+			));
+
+			// if post doesn't exist set create it and set 
+			// the status meta
+			if(count($posts) == 0){
+
+				$post = wp_insert_post(array(
+					'post_title' => 'Pending',
+					'post_content' => 'Pending',
+					'post_author' => $settings['user']
+				));
+
+				add_post_meta($post, 'phonoblog_post_status', 'publish');
+
+			}else{
+				// if post exists add the status meta
+				$post = get_object_vars($posts[0]);
+				add_post_meta($post['ID'], 'phonoblog_post_status', 'draft');
+			}
+
+		}else{
+			// $sid = $_REQUEST['Sid'];
+			// $posts = get_posts(array(
+			// 	'meta_query' => array(
+			// 		'key' => 'phonoblog_sid',
+			// 		'value' => $sid
+			// 	)
+			// ));
+		}
 	break;
 	
 	default: ?>
