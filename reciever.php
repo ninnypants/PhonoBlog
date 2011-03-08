@@ -1,8 +1,8 @@
 <?php
 
 require_once '../../../wp-config.php';
-require_once ABSPASH.WPINC.'/post.php';
-require_once ABSPASH.WPINC.'/query.php';
+require_once ABSPATH.WPINC.'/post.php';
+require_once ABSPATH.WPINC.'/query.php';
 require './twilio.php';
 
 // get settings
@@ -13,7 +13,7 @@ $gather_url = $url.str_replace(ABSPATH, '', __FILE__);
 $transcribe_url = $url.dirname($filepath).'/transcribe.php';
 
 // check to make sure the number is allowed
-if($settings['phone'] != $_REQUEST['From']){
+if($settings['number'] != $_REQUEST['From']){
 	header("Content-type: text/xml");
 	
 	echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -81,11 +81,11 @@ switch($_REQUEST['step']) {
 				if(($title_status && $content_status) && $title_status == 'completed' && $content_status == 'completed'){
 					$post['post_status'] ='publish';
 					wp_insert_post($post);
-				}else{
-					// if not add the post status meta so that it can be
-					// published when everything is ready
-					add_post_meta($post['ID'], 'phonoblog_post_status', 'publish');
 				}
+				// if not add the post status meta so that it can be
+				// published when everything is ready
+				add_post_meta($post['ID'], 'phonoblog_post_status', 'publish');
+				
 			}
 
 		}elseif($_REQUEST['Digits'] == 2){
