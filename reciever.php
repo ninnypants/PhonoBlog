@@ -8,10 +8,9 @@ require './twilio.php';
 // get settings
 $settings = get_option('phonoblogsettings');
 $name = get_bloginfo('name');
-$url = get_bloginfo('url');
+$url = get_bloginfo('url').'/';
 $gather_url = $url.str_replace(ABSPATH, '', __FILE__);
-$transcribe_url = $url.dirname($filepath).'/transcribe.php';
-
+$transcribe_url = $url.dirname(str_replace(ABSPATH, '', __FILE__)).'/transcribe.php';
 // check to make sure the number is allowed
 if($settings['number'] != $_REQUEST['From']){
 	header("Content-type: text/xml");
@@ -31,15 +30,16 @@ header("content-type: text/xml");
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\n";
 switch($_REQUEST['step']) {
 	case 2: ?>
+		<pause length="5" />
 		<Say>Dicktate your post then press any key to continue. We're listening.</Say>
-		<Gather action="<?php  echo $url.'?step=3'; ?>" numDigits="1">
-			<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=content'; ?>" maxLength="600" />
-		</Gather>
+		<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=content'; ?>" maxLength="600" action="<?php echo $gather_url.'?step=3'; ?>" />
+		
 	<?php
 	break;
 	
 	case 3: ?>
-		<Gather action="<?php  echo $url.'?step=4'; ?>" numDigits="1">
+		<pause length="5" />
+		<Gather action="<?php  echo $gather_url.'?step=4'; ?>" numDigits="1">
 			<Say>Press 1, to publish your post.</Say>
 			<Say>Press 2, to save your post as a draft</Say>
 		</Gather>
@@ -49,8 +49,8 @@ switch($_REQUEST['step']) {
 	case 4:
 		if($_REQUEST['Digits'] == 1){
 			// find post by sid
-			$sid = $_REQUEST['Sid'];
-			$posts = get_posts(array(
+			$sid = $_REQUEST['CallSid'];
+			$posts = new WP_Query(array(
 				'meta_query' => array(
 					'key' => 'phonoblog_sid',
 					'value' => $sid
@@ -60,7 +60,7 @@ switch($_REQUEST['step']) {
 			// and add the post_status meta but leave
 			// it as a draft since none of the other
 			// content is in place
-			if(count($posts) == 0){
+			if($posts->post_count == 0){
 
 				$post = wp_insert_post(array(
 					'post_title' => 'Pending',
@@ -69,11 +69,12 @@ switch($_REQUEST['step']) {
 				));
 
 				add_post_meta($post, 'phonoblog_post_status', 'publish');
+				add_post_meta($post, 'phonoblog_sid', $sid);
 
 			}else{
 				// if the post exists then get the status
 				// of the title and content transcriptions
-				$post = get_object_vars($posts[0]);
+				$post = get_object_vars(get_post($posts->current_post));
 				$title_status = get_post_meta($post['ID'], 'phonoblog_title_status', true);
 				$content_status = get_post_meta($post['ID'], 'phonoblog_content_status', true);
 
@@ -90,8 +91,8 @@ switch($_REQUEST['step']) {
 
 		}elseif($_REQUEST['Digits'] == 2){
 			// get post by sid
-			$sid = $_REQUEST['Sid'];
-			$posts = get_posts(array(
+			$sid = $_REQUEST['CallSid'];
+			$posts = new WP_Query(array(
 				'meta_query' => array(
 					'key' => 'phonoblog_sid',
 					'value' => $sid
@@ -100,7 +101,7 @@ switch($_REQUEST['step']) {
 
 			// if post doesn't exist set create it and set 
 			// the status meta
-			if(count($posts) == 0){
+			if($posts->post_count == 0){
 
 				$post = wp_insert_post(array(
 					'post_title' => 'Pending',
@@ -109,15 +110,15 @@ switch($_REQUEST['step']) {
 				));
 
 				add_post_meta($post, 'phonoblog_post_status', 'publish');
-
+				add_post_meta($post, 'phonoblog_sid', $sid);
 			}else{
 				// if post exists add the status meta
-				$post = get_object_vars($posts[0]);
+				$post = get_object_vars(get_post($posts->current_post));
 				add_post_meta($post['ID'], 'phonoblog_post_status', 'draft');
 			}
 
 		}else{
-			// $sid = $_REQUEST['Sid'];
+			// $sid = $_REQUEST['CallSid'];
 			// $posts = get_posts(array(
 			// 	'meta_query' => array(
 			// 		'key' => 'phonoblog_sid',
@@ -129,9 +130,8 @@ switch($_REQUEST['step']) {
 	
 	default: ?>
 		<Say>Hello and welcome to <?php echo $name; ?> please tell us the title of your post then press any key to continue.</Say>
-		<Gather action="<?php echo $url.'?step=2'; ?>" numDigits="1">
-			<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=title'; ?>" maxLength="30" />
-		</Gather>
+		<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=title'; ?>" maxLength="30" action="<?php echo $gather_url.'?step=2'; ?>" />
+		
 	<?php
 	break;
 }
