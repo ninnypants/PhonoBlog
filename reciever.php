@@ -1,8 +1,6 @@
 <?php
 
-require_once '../../../wp-config.php';
-require_once ABSPATH.WPINC.'/post.php';
-require_once ABSPATH.WPINC.'/query.php';
+require_once '../../../wp-load.php';
 require './twilio.php';
 
 // get settings

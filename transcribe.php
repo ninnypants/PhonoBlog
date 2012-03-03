@@ -9,9 +9,7 @@ if (!isset($_REQUEST['RecordingUrl'])) {
 	exit;
 }
 
-require_once '../../../wp-config.php';
-require_once ABSPATH.WPINC.'/post.php';
-require_once ABSPATH.WPINC.'/query.php';
+require_once '../../../wp-load.php';
 require './twilio.php';
 
 $settings = get_option('phonoblogsettings');
@@ -26,9 +24,12 @@ if($_REQUEST['type'] == 'title'){
 	
 	$posts = new WP_Query(array(
 		'meta_query' => array(
-			'key' => 'phonoblog_sid',
-			'value' => $sid
-		)
+			array(
+				'key' => 'phonoblog_sid',
+				'value' => $sid,
+			)
+		),
+		'post_status' => 'any',
 	));
 	// if the post doesn't exist create one
 	// and add the post_status meta but leave
@@ -78,9 +79,12 @@ if($_REQUEST['type'] == 'title'){
 	
 	$posts = new WP_Query(array(
 		'meta_query' => array(
-			'key' => 'phonoblog_sid',
-			'value' => $sid
-		)
+			array(
+				'key' => 'phonoblog_sid',
+				'value' => $sid,
+			)
+		),
+		'post_status' => 'any',
 	));
 	// if the post doesn't exist create one
 	// and add the post_status meta but leave
