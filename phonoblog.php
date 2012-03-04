@@ -58,7 +58,7 @@ function phonoblog_settings(){
 			<select name="user">
 				<option value="">Select User</option>
 				<?php
-				$users = get_users(array('meta_key' => 'wp_user_level', 'meta_value' => 1, 'meta_compare' => '>'));
+				$users = get_users(array('who' => 'authors'));
 				
 				foreach($users as $user){
 					echo '<option value="'.$user->ID.'" '.($settings ? selected($settings['user'], $user->ID) : '').'>'.$user->user_login.'</option>';

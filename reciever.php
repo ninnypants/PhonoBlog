@@ -48,22 +48,26 @@ switch($_REQUEST['step']) {
 		if($_REQUEST['Digits'] == 1){
 			// find post by sid
 			$sid = $_REQUEST['CallSid'];
-			$posts = new WP_Query(array(
+			$posts = get_posts(array(
 				'meta_query' => array(
-					'key' => 'phonoblog_sid',
-					'value' => $sid
-				)
+					array(
+						'key' => 'phonoblog_sid',
+						'value' => $sid,
+					)
+				),
+				'post_status' => 'any',
 			));
 			// if the post doesn't exist create one
 			// and add the post_status meta but leave
 			// it as a draft since none of the other
 			// content is in place
-			if($posts->post_count == 0){
+			if(empty($posts)){
 
 				$post = wp_insert_post(array(
 					'post_title' => 'Pending',
 					'post_content' => 'Pending',
-					'post_author' => $settings['user']
+					'post_author' => $settings['user'],
+					'post_status' => 'draft',
 				));
 
 				add_post_meta($post, 'phonoblog_post_status', 'publish');
@@ -72,7 +76,7 @@ switch($_REQUEST['step']) {
 			}else{
 				// if the post exists then get the status
 				// of the title and content transcriptions
-				$post = get_object_vars(get_post($posts->current_post));
+				$post = get_object_vars($posts[0]);
 				$title_status = get_post_meta($post['ID'], 'phonoblog_title_status', true);
 				$content_status = get_post_meta($post['ID'], 'phonoblog_content_status', true);
 
@@ -90,39 +94,35 @@ switch($_REQUEST['step']) {
 		}elseif($_REQUEST['Digits'] == 2){
 			// get post by sid
 			$sid = $_REQUEST['CallSid'];
-			$posts = new WP_Query(array(
+			$posts = get_posts(array(
 				'meta_query' => array(
-					'key' => 'phonoblog_sid',
-					'value' => $sid
-				)
+					array(
+						'key' => 'phonoblog_sid',
+						'value' => $sid,
+					)
+				),
+				'post_status' => 'any',
 			));
 
 			// if post doesn't exist set create it and set 
 			// the status meta
-			if($posts->post_count == 0){
+			if(empty($posts)){
 
 				$post = wp_insert_post(array(
 					'post_title' => 'Pending',
 					'post_content' => 'Pending',
-					'post_author' => $settings['user']
+					'post_author' => $settings['user'],
+					'post_status' => 'draft',
 				));
 
 				add_post_meta($post, 'phonoblog_post_status', 'publish');
 				add_post_meta($post, 'phonoblog_sid', $sid);
 			}else{
 				// if post exists add the status meta
-				$post = get_object_vars(get_post($posts->current_post));
+				$post = get_object_vars($posts[0]);
 				add_post_meta($post['ID'], 'phonoblog_post_status', 'draft');
 			}
 
-		}else{
-			// $sid = $_REQUEST['CallSid'];
-			// $posts = get_posts(array(
-			// 	'meta_query' => array(
-			// 		'key' => 'phonoblog_sid',
-			// 		'value' => $sid
-			// 	)
-			// ));
 		}
 	break;
 	

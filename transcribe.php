@@ -22,7 +22,7 @@ if($_REQUEST['type'] == 'title'){
 	$transcription_status = (strtolower($_REQUEST['TranscriptionStatus']) == 'completed') ? 'completed' : 'error';
 	$transcription_text = $_REQUEST['TranscriptionText'] ? $_REQUEST['TranscriptionText'] : 'Error Transcribing Title';
 	
-	$posts = new WP_Query(array(
+	$posts = get_posts(array(
 		'meta_query' => array(
 			array(
 				'key' => 'phonoblog_sid',
@@ -35,12 +35,13 @@ if($_REQUEST['type'] == 'title'){
 	// and add the post_status meta but leave
 	// it as a draft since none of the other
 	// content is in place
-	if($posts->post_count == 0){
+	if(empty($posts)){
 
 		$post = wp_insert_post(array(
 			'post_title' => $transcription_text,
 			'post_content' => 'Pending',
-			'post_author' => $settings['user']
+			'post_author' => $settings['user'],
+			'post_status' => 'draft',
 		));
 
 		add_post_meta($post, 'phonoblog_title_status', $transcription_status);
@@ -50,7 +51,7 @@ if($_REQUEST['type'] == 'title'){
 	}else{
 		// if the post exists then get the status
 		// of the title and content transcriptions
-		$post = get_object_vars(get_post($posts->current_post));
+		$post = get_object_vars($posts[0]);
 		$post_status = get_post_meta($post['ID'], 'phonoblog_post_status', true);
 		$content_status = get_post_meta($post['ID'], 'phonoblog_content_status', true);
 
@@ -77,7 +78,7 @@ if($_REQUEST['type'] == 'title'){
 	$transcription_status = (strtolower($_REQUEST['TranscriptionStatus']) == 'completed') ? 'completed' : 'error';
 	$transcription_text = $_REQUEST['TranscriptionText'] ? $_REQUEST['TranscriptionText'] : 'Error Transcribing Title';
 	
-	$posts = new WP_Query(array(
+	$posts = get_posts(array(
 		'meta_query' => array(
 			array(
 				'key' => 'phonoblog_sid',
@@ -90,12 +91,13 @@ if($_REQUEST['type'] == 'title'){
 	// and add the post_status meta but leave
 	// it as a draft since none of the other
 	// content is in place
-	if($posts->post_count == 0){
+	if(empty($posts)){
 
 		$post = wp_insert_post(array(
 			'post_title' => 'Pending',
 			'post_content' => $transcription_text,
-			'post_author' => $settings['user']
+			'post_author' => $settings['user'],
+			'post_status' => 'draft',
 		));
 
 		add_post_meta($post, 'phonoblog_content_status', $transcription_status);
@@ -105,7 +107,7 @@ if($_REQUEST['type'] == 'title'){
 	}else{
 		// if the post exists then get the status
 		// of the title and content transcriptions
-		$post = get_object_vars(get_post($posts->current_post));
+		$post = get_object_vars($posts[0]);
 		$post_status = get_post_meta($post['ID'], 'phonoblog_post_status', true);
 		$title_status = get_post_meta($post['ID'], 'phonoblog_title_status', true);
 
