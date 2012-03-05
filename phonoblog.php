@@ -2,8 +2,8 @@
 
 /*
 Plugin Name: PhonoBlog
-Plugin URI: http://phonoblog.com
-Description: Voice to blog posts.
+Plugin URI: https://github.com/ninnypants/PhonoBlog
+Description: Is a simple plugin that allows you to call and record voice posts that are transcribed and posted to your blog. This plugin uses Twillio for call handling which costs money.
 Version: 0.5
 Author: ninnypants
 Author URI: http://ninnypants.com
