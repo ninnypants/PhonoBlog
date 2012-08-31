@@ -12,7 +12,7 @@ $transcribe_url = $url.dirname(str_replace(ABSPATH, '', __FILE__)).'/transcribe.
 // check to make sure the number is allowed
 if($settings['number'] != $_REQUEST['From']){
 	header("Content-type: text/xml");
-	
+
 	echo '<?xml version="1.0" encoding="UTF-8"?>';
 	?>
 	<Response>
@@ -29,12 +29,12 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\n";
 switch($_REQUEST['step']) {
 	case 2: ?>
 		<pause length="5" />
-		<Say>Dicktate your post then press any key to continue. We're listening.</Say>
+		<Say>Dictate your post then press any key to continue. We're listening.</Say>
 		<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=content'; ?>" maxLength="600" action="<?php echo $gather_url.'?step=3'; ?>" />
-		
+
 	<?php
 	break;
-	
+
 	case 3: ?>
 		<pause length="5" />
 		<Gather action="<?php  echo $gather_url.'?step=4'; ?>" numDigits="1">
@@ -88,7 +88,7 @@ switch($_REQUEST['step']) {
 				// if not add the post status meta so that it can be
 				// published when everything is ready
 				add_post_meta($post['ID'], 'phonoblog_post_status', 'publish');
-				
+
 			}
 
 		}elseif($_REQUEST['Digits'] == 2){
@@ -104,7 +104,7 @@ switch($_REQUEST['step']) {
 				'post_status' => 'any',
 			));
 
-			// if post doesn't exist set create it and set 
+			// if post doesn't exist set create it and set
 			// the status meta
 			if(empty($posts)){
 
@@ -125,11 +125,11 @@ switch($_REQUEST['step']) {
 
 		}
 	break;
-	
+
 	default: ?>
 		<Say>Hello and welcome to <?php echo $name; ?> please tell us the title of your post then press any key to continue.</Say>
 		<Record transcribe="true" transcribeCallback="<?php echo $transcribe_url.'?type=title'; ?>" maxLength="30" action="<?php echo $gather_url.'?step=2'; ?>" />
-		
+
 	<?php
 	break;
 }

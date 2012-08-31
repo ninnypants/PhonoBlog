@@ -20,9 +20,9 @@ Report issues to [https://github.com/ninnypants/PhonoBlog](https://github.com/ni
 
 2. Register a Twillio account and get your account SID and Auth Token. Place these keys in the fields provided in Settings > PhonoBlog Settings.
 
-3. Register your full format phone numeber country code - area code - phone number (15555551234) and attach it to the user it should post as.
+3. Register your full format phone number country code - area code - phone number (15555551234) and attach it to the user it should post as.
 
-4. Add your url to handle calls to Twillio http://yoursite.com/wp-content/plugins/phonoblog/reciever.php
+4. Add your url to handle calls to Twillio http://yoursite.com/wp-content/plugins/phonoblog/receiver.php
 
 5. Call and post!
 
